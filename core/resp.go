@@ -148,4 +148,4 @@ func Encode(value interface{}, isSimple bool) []byte {
 		return []byte(fmt.Sprintf("$%d\r\n%s\r\n", len(v), v))
 	}
 	return []byte{}
-}
+} 
