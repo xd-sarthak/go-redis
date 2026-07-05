@@ -122,6 +122,46 @@ func evalTTL(args []string, c io.ReadWriter) error {
 	return nil
 }
 
+// if exist evalDEL returns how many keys were deleted, otherwise returns 0
+func evalDEL(args []string, c io.ReadWriter) error {
+	var countDeleted int = 0
+
+	for _, key := range args {
+		if ok := Del(key); ok {
+			countDeleted++
+		}
+	}
+	c.Write(Encode(countDeleted, false))
+	return nil
+}
+
+// evalEXPIRE is the implementation of EXPIRE command
+// EXPIRE k seconds
+// if the key does not exist, return 0
+// if the key exists, set the expiration and return 1 
+func evalEXPIRE(args []string, c io.ReadWriter) error {
+	if len(args) <= 2 {
+		return errors.New("ERR wrong number of arguments for 'expire' command")
+	}
+
+	var key string = args[0]
+	expirationSec, err := strconv.ParseInt(args[1], 10, 64)
+	if err != nil {
+		return errors.New("ERR value is not an integer or out of range")
+	}
+
+	// if the key does not exist, return 0
+	obj := Get(key)
+	if obj == nil {
+		c.Write([]byte(":0\r\n"))
+		return nil
+	}
+
+	obj.ExpiresAt = time.Now().UnixMilli() + expirationSec*1000
+	c.Write([]byte(":1\r\n"))
+	return nil
+}
+
 
 func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 	switch cmd.Cmd {
@@ -133,6 +173,10 @@ func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 		return evalGET(cmd.Args,c)
 	case "TTL":
 		return evalTTL(cmd.Args,c)
+	case "DEL":
+		return evalDEL(cmd.Args,c)
+	case "EXPIRE":
+		return evalEXPIRE(cmd.Args,c)
 	default:
 		return evalPING(cmd.Args, c)
 	}

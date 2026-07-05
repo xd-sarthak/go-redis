@@ -32,9 +32,20 @@ func Put(k string, v *Obj) {
 }
 
 func Get(k string) *Obj {
-	obj, exists := store[k]
-	if !exists {
-		return nil
+	v := store[k]
+	if v != nil {
+		if v.ExpiresAt <= time.Now().UnixMilli(){
+			delete(store, k)
+			return nil
+		}
 	}
-	return obj
+	return v
+}
+
+func Del(k string) bool {
+	if _,ok := store[k]; ok {
+		delete(store, k)
+		return true
+	}
+	return false
 }
