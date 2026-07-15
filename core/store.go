@@ -2,6 +2,7 @@ package core
 
 import (
 	"time"
+	"github.com/xd-sarthak/go-redis/config"
 )
 
 var store map[string]*Obj
@@ -28,6 +29,10 @@ func NewObj(value interface{}, durationMs int64) *Obj {
 }
 
 func Put(k string, v *Obj) {
+	if len(store) >= config.KeysLimit {
+		// Handle keys limit exceeded (e.g., remove oldest key)
+		evict();
+	}
 	store[k] = v
 }
 
