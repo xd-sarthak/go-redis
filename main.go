@@ -16,5 +16,7 @@ func setUpFlags(){
 func main() {
 	setUpFlags()
 	log.Println("starting the server...")
-	server.RunAsyncTCPServer()
+	if err := server.RunAsyncTCPServer(); err != nil {
+		log.Fatalf("server exited: %v", err)
+	}
 }
