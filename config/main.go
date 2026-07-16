@@ -7,3 +7,5 @@ var Port int = 7379
 var KeysLimit int = 1000
 
 var EvictionPolicy string = "simple-first"
+
+var AOFFilePath string = "./dump.aof"
