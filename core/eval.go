@@ -44,6 +44,7 @@ func evalSET(args []string) []byte {
 
 	key = args[0]
 	value = args[1]
+	objType, objEncoding := deduceTypeEncoding(value)
 
 	for i := 2; i < len(args); i++ {
 		switch args[i] {
@@ -64,7 +65,7 @@ func evalSET(args []string) []byte {
 	}
 
 	 // putting the key and value in the hashmap
-	 Put(key, NewObj(value, expiration))
+	 Put(key, NewObj(value, expiration, objType, objEncoding))
 	 return RESP_OK
 }
 
@@ -162,6 +163,33 @@ func evalBGWRITEAOF(args []string) []byte {
 	return RESP_OK
 }
 
+func evalINCR(args []string) []byte {
+	if len(args) != 1 {
+		return Encode(errors.New("ERR wrong number of arguments for 'incr' command"), false)
+	}
+
+	var key string = args[0]
+	obj := Get(key)
+
+	if obj == nil {
+		Put(key, NewObj("0", -1, OBJ_TYPE_STRING, OBJ_ENCODING_INT))
+	}
+
+	if err := assertType(obj.TypeEncoding, OBJ_TYPE_STRING); err != nil {
+		return Encode(err, false)
+	}
+
+	if err := assertEncoding(obj.TypeEncoding, OBJ_ENCODING_INT); err != nil {
+		return Encode(err, false)
+	}
+
+	i,_ := strconv.ParseInt(obj.Value.(string), 10, 64)
+	i++
+	obj.Value = strconv.FormatInt(i, 10)
+
+	return Encode(i, false)
+}
+
 
 func EvalAndRespond(cmds RedisCmds, c io.ReadWriter) {
 
@@ -184,6 +212,8 @@ func EvalAndRespond(cmds RedisCmds, c io.ReadWriter) {
 		buf.Write(evalEXPIRE(cmd.Args))
 	case "BGWRITEAOF":
 		buf.Write(evalBGWRITEAOF(cmd.Args))
+	case "INCR":
+		buf.Write(evalINCR(cmd.Args))
 	default:
 		buf.Write(evalPING(cmd.Args))
 	}
