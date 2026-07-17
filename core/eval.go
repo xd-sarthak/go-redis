@@ -172,7 +172,8 @@ func evalINCR(args []string) []byte {
 	obj := Get(key)
 
 	if obj == nil {
-		Put(key, NewObj("0", -1, OBJ_TYPE_STRING, OBJ_ENCODING_INT))
+		obj = NewObj("0", -1, OBJ_TYPE_STRING, OBJ_ENCODING_INT)
+		Put(key, obj)
 	}
 
 	if err := assertType(obj.TypeEncoding, OBJ_TYPE_STRING); err != nil {
