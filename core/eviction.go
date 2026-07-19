@@ -5,9 +5,11 @@ import (
 )
 
 func evict() {
-	switch config.EvictionPolicy {
+	switch config.EvictionStrategy {
 	case "simple-first":
 		evictFirst()
+	case "allkeys-random":
+		evictAllKeyRandom()
 	}
 }
 
@@ -16,4 +18,17 @@ func evictFirst() {
 		delete(store, k)
 		return
 	}
+}
+
+func evictAllKeyRandom() {
+	evictCount := int64(config.EvictionRatio * float64(config.KeysLimit))
+
+	// this is random in a hashmap store 
+	for k := range store {
+		Del(k)
+		evictCount--
+		if evictCount <= 0 {
+			break;
+	}
+}
 }

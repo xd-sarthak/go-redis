@@ -4,8 +4,10 @@ var Host string = "0.0.0.0"
 
 var Port int = 7379
 
-var KeysLimit int = 1000
+var KeysLimit int = 100
 
-var EvictionPolicy string = "simple-first"
+var EvictionStrategy string = "allkeys-random"
+var EvictionRatio float64 = 0.4
+
 
 var AOFFilePath string = "./dump.aof"

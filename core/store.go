@@ -30,6 +30,10 @@ func Put(k string, v *Obj) {
 		evict();
 	}
 	store[k] = v
+	if KeySpaceStat[0] == nil {
+		KeySpaceStat[0] = make(map[string]int)
+	}
+	KeySpaceStat[0]["keys"]++
 }
 
 func Get(k string) *Obj {
@@ -46,6 +50,7 @@ func Get(k string) *Obj {
 func Del(k string) bool {
 	if _,ok := store[k]; ok {
 		delete(store, k)
+		KeySpaceStat[0]["keys"]--
 		return true
 	}
 	return false
